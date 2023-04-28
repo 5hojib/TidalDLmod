@@ -20,25 +20,21 @@ def __fixPath__(name: str):
 
 
 def __getYear__(releaseDate: str):
-    if releaseDate is None or releaseDate == '':
+    if releaseDate is None or not releaseDate:
         return ''
     return aigpy.string.getSubOnlyEnd(releaseDate, '-')
 
 
 def __getDurationStr__(seconds):
     time_string = str(datetime.timedelta(seconds=seconds))
-    if time_string.startswith('0:'):
-        time_string = time_string[2:]
-    return time_string
+    return time_string.removeprefix('0:')
 
 
 def __getExtension__(stream: StreamUrl):
     if '.flac' in stream.url:
         return '.flac'
     if '.mp4' in stream.url:
-        if 'ac4' in stream.codec or 'mha1' in stream.codec:
-            return '.mp4'
-        return '.m4a'
+        return '.mp4' if 'ac4' in stream.codec or 'mha1' in stream.codec else '.m4a'
     return '.m4a'
 
 
@@ -51,7 +47,7 @@ def getAlbumPath(album):
     if SETTINGS.audioQuality != AudioQuality.Master:
         flag = flag.replace("M", "")
     if flag != "":
-        flag = "[" + flag + "] "
+        flag = f"[{flag}] "
 
     # album and addyear
     albumName = __fixPath__(album.title)
@@ -136,7 +132,7 @@ def getTrackPath(track, stream, album=None, playlist=None):
 
 
 def getVideoPath(video, album=None, playlist=None):
-    base = SETTINGS.downloadPath + '/Video/'
+    base = f'{SETTINGS.downloadPath}/Video/'
     if album is not None and album.title is not None:
         base = getAlbumPath(album)
     elif playlist is not None:

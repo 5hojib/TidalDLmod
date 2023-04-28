@@ -16,7 +16,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InlineQue
 
 @Client.on_inline_query()
 async def inline_search_tidal(_, event: InlineQuery):
-    answers = list()
+    answers = []
     msg = None
     links = None
     if event.query == "" or not event.query.startswith(("-a", "-s", "-d")):
@@ -89,43 +89,42 @@ async def inline_search_tidal(_, event: InlineQuery):
                 )
         elif links:
 
-            for name in title:
-                answers.append(
-                    InlineQueryResultArticle(
-                        title=name,
-                        description=artist[title.index(name)],
-                        input_message_content=InputTextMessageContent(
-                            message_text=lang.select.INLINE_MEDIA_SEARCH.format(
-                                name,
-                                artist[title.index(name)]
-                            ),
-                            disable_web_page_preview=True,
+            answers.extend(
+                InlineQueryResultArticle(
+                    title=name,
+                    description=artist[title.index(name)],
+                    input_message_content=InputTextMessageContent(
+                        message_text=lang.select.INLINE_MEDIA_SEARCH.format(
+                            name, artist[title.index(name)]
                         ),
-                        thumb_url=Config.INLINE_THUMB,
-                        reply_markup=InlineKeyboardMarkup(
+                        disable_web_page_preview=True,
+                    ),
+                    thumb_url=Config.INLINE_THUMB,
+                    reply_markup=InlineKeyboardMarkup(
+                        [
                             [
-                                [
-                                    InlineKeyboardButton(
-                                        text=lang.select.SEARCH_AGAIN,
-                                        switch_inline_query_current_chat=""
-                                    )
-                                ],
-                                [
-                                    InlineKeyboardButton(
-                                        text=lang.select.GET_FILE,
-                                        url=links[title.index(name)]
-                                    )
-                                ],
-                                [
-                                    InlineKeyboardButton(
-                                        text=lang.select.MUSIC_C_JOIN,
-                                        url=Config.MUSIC_CHANNEL_LINK
-                                    )
-                                ]
-                            ]
-                        )
-                    )
+                                InlineKeyboardButton(
+                                    text=lang.select.SEARCH_AGAIN,
+                                    switch_inline_query_current_chat="",
+                                )
+                            ],
+                            [
+                                InlineKeyboardButton(
+                                    text=lang.select.GET_FILE,
+                                    url=links[title.index(name)],
+                                )
+                            ],
+                            [
+                                InlineKeyboardButton(
+                                    text=lang.select.MUSIC_C_JOIN,
+                                    url=Config.MUSIC_CHANNEL_LINK,
+                                )
+                            ],
+                        ]
+                    ),
                 )
+                for name in title
+            )
         else:
             answers.append(
                 InlineQueryResultArticle(

@@ -65,15 +65,14 @@ def user_set_buttons(t_q, user_id):
         [
             InlineKeyboardButton(
                 text=lang.select.TIDAL_QUALITY.format(t_q),
-                callback_data="tidalq_" + str(user_id) + "_" + str(t_q)
+                callback_data=f"tidalq_{str(user_id)}_{str(t_q)}",
             )
         ],
         [
             InlineKeyboardButton(
-                text=lang.select.CLOSE,
-                callback_data="close_" + str(user_id)
+                text=lang.select.CLOSE, callback_data=f"close_{str(user_id)}"
             )
-        ]
+        ],
     ]
     return InlineKeyboardMarkup(inline_keyboard)
 
@@ -82,45 +81,43 @@ def quality_set(u_id):
         [
             InlineKeyboardButton(
                 text=lang.select.TIDAL_QUALITY_MASTER,
-                callback_data="setq_Master_" + str(u_id)
+                callback_data=f"setq_Master_{str(u_id)}",
             )
         ],
         [
             InlineKeyboardButton(
                 text=lang.select.TIDAL_QUALITY_HIFI,
-                callback_data="setq_HiFi_" + str(u_id)
+                callback_data=f"setq_HiFi_{str(u_id)}",
             )
         ],
         [
             InlineKeyboardButton(
                 text=lang.select.TIDAL_QUALITY_NORMAL,
-                callback_data="setq_Normal_" + str(u_id)
+                callback_data=f"setq_Normal_{str(u_id)}",
             )
         ],
         [
             InlineKeyboardButton(
                 text=lang.select.TIDAL_QUALITY_HIGH,
-                callback_data="setq_High_" + str(u_id)
+                callback_data=f"setq_High_{str(u_id)}",
             )
         ],
         [
             InlineKeyboardButton(
-                text=lang.select.CLOSE,
-                callback_data="close_" + str(u_id)
+                text=lang.select.CLOSE, callback_data=f"close_{str(u_id)}"
             )
-        ]
+        ],
     ]
     return InlineKeyboardMarkup(inline_keyboard)
 
 def api_key_set(index, platform):
-    inline_keyboard = []
-    for i in index:
-        inline_keyboard.append(
-            [
-                InlineKeyboardButton(text=f"{i} - {platform[i]}",
-                callback_data=f"setapi_{i}"
-                )
-            ]
-        )
+    inline_keyboard = [
+        [
+            InlineKeyboardButton(
+                text=f"{i} - {platform[i]}", callback_data=f"setapi_{i}"
+            )
+        ]
+        for i in index
+    ]
     inline_keyboard.append(exit_button)
     return InlineKeyboardMarkup(inline_keyboard)

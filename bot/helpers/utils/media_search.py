@@ -32,9 +32,10 @@ async def check_file_exist_db(bot, title, artist, track_id, s_type, out=False):
 
 async def index_audio_files(chat_id):
     async for message in USER.search_messages(chat_id=Config.SEARCH_CHANNEL, filter=enums.MessagesFilter.AUDIO):
-        if message.audio:
-            if not await check_file_exist_db(None, message.audio.title, message.audio.performer, None, "track"):
-                music_db.set_music(message.id, message.audio.title, message.audio.performer, None, "track")
+        if message.audio and not await check_file_exist_db(
+            None, message.audio.title, message.audio.performer, None, "track"
+        ):
+            music_db.set_music(message.id, message.audio.title, message.audio.performer, None, "track")
     # INDEXING ALBUM POSTS
     # NOOB WAY (DONT BLAME ME)
     try:
@@ -42,8 +43,7 @@ async def index_audio_files(chat_id):
         to_replace = []
         for item in text:
             items = item.split(" ")
-            for i in items:
-                to_replace.append(i)
+            to_replace.extend(iter(items))
     except:
         return
     async for message in USER.search_messages(chat_id=Config.SEARCH_CHANNEL, filter=enums.MessagesFilter.PHOTO):
@@ -80,9 +80,10 @@ async def check_duplicate(title, artist, track_id, bot, c_id, r_id, etype=None):
         else:
             msg_link = await check_file_exist_db(bot, title, artist, None, "track", True)
         if msg_link:
-            inline_keyboard = []
-            inline_keyboard.append([InlineKeyboardButton(text=lang.select.GET_FILE, url=msg_link)])
-            if not Config.MUSIC_CHANNEL_LINK == "":
+            inline_keyboard = [
+                [InlineKeyboardButton(text=lang.select.GET_FILE, url=msg_link)]
+            ]
+            if Config.MUSIC_CHANNEL_LINK != "":
                 inline_keyboard.append([InlineKeyboardButton(text=lang.select.JOIN_MUSIC_STORAGE, url=Config.MUSIC_CHANNEL_LINK)])
             await bot.send_message(
                 chat_id=c_id,
@@ -90,7 +91,7 @@ async def check_duplicate(title, artist, track_id, bot, c_id, r_id, etype=None):
                 reply_to_message_id=r_id,
                 reply_markup=InlineKeyboardMarkup(inline_keyboard)
             )
-            LOGGER.info(title + " already exist")
+            LOGGER.info(f"{title} already exist")
             return True
     except Exception as e:
         LOGGER.warning(e)

@@ -83,37 +83,36 @@ async def auth_chat(bot, update):
 
 @Client.on_message(filters.command(CMD.ADD_ADMIN))
 async def add_admin(bot, update):
-    if await check_id(update.from_user.id, restricted=True):
-        if update.reply_to_message:
-            admin_id = update.reply_to_message.from_user.id
-        else:
-            try:
-                admin_id = update.text.split()[1]
-                if admin_id.isnumeric():
-                    pass
-                else:
-                    admin_id = None
-            except:
+    if not await check_id(update.from_user.id, restricted=True):
+        return
+    if update.reply_to_message:
+        admin_id = update.reply_to_message.from_user.id
+    else:
+        try:
+            admin_id = update.text.split()[1]
+            if not admin_id.isnumeric():
                 admin_id = None
-        if admin_id:
-            admins_db.set_admins(int(admin_id))
-        else:
-            await bot.send_message(
-                chat_id=update.chat.id,
-                text=lang.select.NO_ID_PROVIDED,
-                reply_to_message_id=update.id
-            )
-            return
-        # For refreshing the global admin list
-        await get_chats()
-
+        except:
+            admin_id = None
+    if admin_id:
+        admins_db.set_admins(int(admin_id))
+    else:
         await bot.send_message(
             chat_id=update.chat.id,
-            text=lang.select.ADD_ADMIN.format(
-                admin_id
-            ),
+            text=lang.select.NO_ID_PROVIDED,
             reply_to_message_id=update.id
         )
+        return
+    # For refreshing the global admin list
+    await get_chats()
+
+    await bot.send_message(
+        chat_id=update.chat.id,
+        text=lang.select.ADD_ADMIN.format(
+            admin_id
+        ),
+        reply_to_message_id=update.id
+    )
 
 @Client.on_message(filters.command(CMD.INDEX))
 async def index_files(bot, update):

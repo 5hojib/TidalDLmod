@@ -12,12 +12,14 @@ LOGGER = logging.getLogger(__name__)
 if not os.environ.get("ENV"):
     load_dotenv('.env', override=True)
 
+
+
 class Config(object):
     try:
         TG_BOT_TOKEN = getenv("TG_BOT_TOKEN")
         APP_ID = int(getenv("APP_ID", 123))
         API_HASH = getenv("API_HASH")
-       
+
     except:
         LOGGER.warning("Essential TG Configs are missing")
         exit(1)
@@ -25,11 +27,11 @@ class Config(object):
     USER_SESSION = getenv("USER_SESSION", "")
 
     try:
-        AUTH_CHAT = set(int(x) for x in getenv("AUTH_CHAT").split())
+        AUTH_CHAT = {int(x) for x in getenv("AUTH_CHAT").split()}
     except:
         AUTH_CHAT = ""
     try:
-        ADMINS = set(int(x) for x in getenv("ADMINS").split())
+        ADMINS = {int(x) for x in getenv("ADMINS").split()}
     except:
         LOGGER.warning("NO ADMIN USER IDS FOUND")
         exit(1)
@@ -43,15 +45,11 @@ class Config(object):
     try:
         SEARCH_CHANNEL = int(getenv("SEARCH_CHANNEL"))
     except:
-        if LOG_CHANNEL_ID:
-            SEARCH_CHANNEL = LOG_CHANNEL_ID
-        else:
-            SEARCH_CHANNEL = None
-    
+        SEARCH_CHANNEL = LOG_CHANNEL_ID if LOG_CHANNEL_ID else None
     IS_BOT_PUBLIC = getenv("IS_BOT_PUBLIC", True)
 
     try:
-        AUTH_USERS = set(int(x) for x in getenv("AUTH_USERS").split())
+        AUTH_USERS = {int(x) for x in getenv("AUTH_USERS").split()}
     except:
         AUTH_USERS = ""
 
@@ -60,16 +58,16 @@ class Config(object):
     DOWNLOAD_BASE_DIR = WORK_DIR + DOWNLOADS_FOLDER
 
     INLINE_THUMB = getenv("INLINE_THUMB", "")
-    
+
     # Country code for Tidal API (in caps)
     TIDAL_REGION = getenv("TIDAL_REGION", "IN")
     TIDAL_SEARCH_LIMIT = int(getenv("TIDAL_SEARCH_LIMIT", 10))
-    
+
     BOT_USERNAME = getenv("BOT_USERNAME", "")
     if not BOT_USERNAME:
         LOGGER.warning("NO BOT USERNAME FOUND")
         exit(1)
-    
+
     DATABASE_URL = getenv("DATABASE_URL")
     if not DATABASE_URL:
         LOGGER.warning("NO DATABASE URL FOUND")

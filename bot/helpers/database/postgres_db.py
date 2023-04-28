@@ -18,11 +18,7 @@ class DataBaseHandle:
 
         self._dburl = dburl
 
-        if isinstance(self._dburl, bool):
-            self._block = True
-        else:
-            self._block = False
-
+        self._block = isinstance(self._dburl, bool)
         if self._block:
             return
 

@@ -1,0 +1,58 @@
+services:
+  - name: tidal
+    plan: free
+    env: docker
+    type: worker
+    region: singapore
+    envVars:
+      - key: TG_BOT_TOKEN
+        # value: TG_BOT_TOKEN
+        sync: false
+      - key: APP_ID
+        # value: APP_ID
+        sync: false
+      - key: API_HASH
+        # value: API_HASH
+        sync: false
+      - key: USER_SESSION
+        # value: USER_SESSION
+        sync: false
+      - key: AUTH_CHAT
+        # value: AUTH_CHAT
+        sync: false
+      - key: ADMINS
+        # value: ADMINS
+        sync: false
+      - key: ALLOW_DUMP
+        # value: ALLOW_DUMP
+        sync: false
+      - key: SEARCH_CHANNEL
+        # value: SEARCH_CHANNEL
+        sync: false
+      - key: IS_BOT_PUBLIC
+        # value: IS_BOT_PUBLIC
+        sync: false
+      - key: TIDAL_REGION
+        # value: TIDAL_REGION
+        sync: false
+      - key: TIDAL_SEARCH_LIMIT
+        # value: TIDAL_SEARCH_LIMIT
+        sync: false
+      - key: BOT_USERNAME
+        # value: BOT_USERNAME
+        sync: false
+      - key: OWNER_USERNAME
+        # value: OWNER_USERNAME
+        sync: false
+      - key: DATABASE_URL
+        # value: DATABASE_URL
+        sync: false
+      - key: LOG_CHANNEL_ID
+        # value: LOG_CHANNEL_ID
+        sync: false
+      - key: ALLOW_OTHER_LINKS
+        # value: ALLOW_OTHER_LINKS
+        sync: false
+      - key: MUSIC_CHANNEL_LINK
+        # value: MUSIC_CHANNEL_LINK
+        sync: false

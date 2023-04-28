@@ -2,7 +2,7 @@ services:
   - name: tidal
     plan: free
     env: docker
-    type: worker
+    type: web
     region: singapore
     envVars:
       - key: TG_BOT_TOKEN

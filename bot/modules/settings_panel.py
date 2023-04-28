@@ -121,7 +121,7 @@ async def main_menu_cb(bot, update):
 async def tquality_user_cb(bot, update):
     u_id = update.data.split("_")[1]
     quality = update.data.split("_")[2]
-    if not int(u_id) == update.from_user.id:
+    if int(u_id) != update.from_user.id:
         await update.answer(lang.select.WRONG_USER_CLICK)
         return
     await bot.edit_message_text(
@@ -135,7 +135,7 @@ async def tquality_user_cb(bot, update):
 async def set_tquality_cb(bot, update):
     u_id = update.data.split("_")[2]
     quality = update.data.split("_")[1]
-    if not int(u_id) == update.from_user.id:
+    if int(u_id) != update.from_user.id:
         await update.answer(lang.select.WRONG_USER_CLICK)
         return
     user_settings.set_var(u_id, "QUALITY", quality)
@@ -150,11 +150,11 @@ async def set_tquality_cb(bot, update):
 async def api_panel_cb(bot, update):
     if await check_id(update.from_user.id, restricted=True):
         index, platform, validity, quality = await getapiInfo()
-        info = ""
-        for number in index:
-            info += f"<b>● {number} - {platform[number]}</b>\nFormats - <code>{quality[number]}</code>\nValid - <code>{validity[number]}</code>\n"
-
-        c_index = SETTINGS.apiKeyIndex 
+        info = "".join(
+            f"<b>● {number} - {platform[number]}</b>\nFormats - <code>{quality[number]}</code>\nValid - <code>{validity[number]}</code>\n"
+            for number in index
+        )
+        c_index = SETTINGS.apiKeyIndex
         await bot.edit_message_text(
             chat_id=update.message.chat.id,
             message_id=update.message.id,

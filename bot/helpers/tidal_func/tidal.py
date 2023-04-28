@@ -89,8 +89,7 @@ class TidalAPI(object):
     def __post__(self, path, data, auth=None, urlpre='https://auth.tidal.com/v1/oauth2'):
         for index in range(0, 3):
             try:
-                result = requests.post(urlpre+path, data=data, auth=auth, verify=False).json()
-                return result
+                return requests.post(urlpre+path, data=data, auth=auth, verify=False).json()
             except Exception as e:
                 if index >= 3:
                     raise e
@@ -109,7 +108,7 @@ class TidalAPI(object):
         self.key.verificationUrl = result['verificationUri']
         self.key.authCheckTimeout = result['expiresIn']
         self.key.authCheckInterval = result['interval']
-        return "http://" + self.key.verificationUrl + "/" + self.key.userCode
+        return f"http://{self.key.verificationUrl}/{self.key.userCode}"
 
     def checkAuthStatus(self) -> bool:
         data = {
@@ -135,11 +134,9 @@ class TidalAPI(object):
         return True
 
     def verifyAccessToken(self, accessToken) -> bool:
-        header = {'authorization': 'Bearer {}'.format(accessToken)}
+        header = {'authorization': f'Bearer {accessToken}'}
         result = requests.get('https://api.tidal.com/v1/sessions', headers=header).json()
-        if 'status' in result and result['status'] != 200:
-            return False
-        return True
+        return 'status' not in result or result['status'] == 200
 
     def refreshAccessToken(self, refreshToken) -> bool:
         data = {
@@ -161,14 +158,15 @@ class TidalAPI(object):
         return True
 
     def loginByAccessToken(self, accessToken, userid=None):
-        header = {'authorization': 'Bearer {}'.format(accessToken)}
+        header = {'authorization': f'Bearer {accessToken}'}
         result = requests.get('https://api.tidal.com/v1/sessions', headers=header).json()
         if 'status' in result and result['status'] != 200:
             raise Exception("Login failed!")
 
-        if not aigpy.string.isNull(userid):
-            if str(result['userId']) != str(userid):
-                raise Exception("User mismatch! Please use your own accesstoken.",)
+        if not aigpy.string.isNull(userid) and str(result['userId']) != str(
+            userid
+        ):
+            raise Exception("User mismatch! Please use your own accesstoken.",)
 
         self.key.userId = result['userId']
         self.key.countryCode = result['countryCode']
@@ -176,19 +174,21 @@ class TidalAPI(object):
         return
 
     def getAlbum(self, id) -> Album:
-        return aigpy.model.dictToModel(self.__get__('albums/' + str(id)), Album())
+        return aigpy.model.dictToModel(self.__get__(f'albums/{str(id)}'), Album())
 
     def getPlaylist(self, id) -> Playlist:
-        return aigpy.model.dictToModel(self.__get__('playlists/' + str(id)), Playlist())
+        return aigpy.model.dictToModel(
+            self.__get__(f'playlists/{str(id)}'), Playlist()
+        )
 
     def getArtist(self, id) -> Artist:
-        return aigpy.model.dictToModel(self.__get__('artists/' + str(id)), Artist())
+        return aigpy.model.dictToModel(self.__get__(f'artists/{str(id)}'), Artist())
 
     def getTrack(self, id) -> Track:
-        return aigpy.model.dictToModel(self.__get__('tracks/' + str(id)), Track())
+        return aigpy.model.dictToModel(self.__get__(f'tracks/{str(id)}'), Track())
 
     def getVideo(self, id) -> Video:
-        return aigpy.model.dictToModel(self.__get__('videos/' + str(id)), Video())
+        return aigpy.model.dictToModel(self.__get__(f'videos/{str(id)}'), Video())
 
     def getMix(self, id) -> Mix:
         mix = Mix()
@@ -207,12 +207,10 @@ class TidalAPI(object):
             return self.getVideo(id)
         if type == Type.Playlist:
             return self.getPlaylist(id)
-        if type == Type.Mix:
-            return self.getMix(id)
-        return None
+        return self.getMix(id) if type == Type.Mix else None
 
     def search(self, text: str, type: Type, offset: int = 0, limit: int = 10) -> SearchResult:
-        typeStr = type.name.upper() + "S"
+        typeStr = f"{type.name.upper()}S"
         if type == Type.Null:
             typeStr = "ARTISTS,ALBUMS,TRACKS,VIDEOS,PLAYLISTS"
 
@@ -231,9 +229,7 @@ class TidalAPI(object):
             return result.albums.items
         if type == Type.Artist:
             return result.artists.items
-        if type == Type.Playlist:
-            return result.playlists.items
-        return []
+        return result.playlists.items if type == Type.Playlist else []
 
     def getLyrics(self, id) -> Lyrics:
         data = self.__get__(f'tracks/{str(id)}/lyrics', urlpre='https://listen.tidal.com/v1/')
@@ -241,11 +237,11 @@ class TidalAPI(object):
 
     def getItems(self, id, type: Type):
         if type == Type.Playlist:
-            data = self.__getItems__('playlists/' + str(id) + "/items")
+            data = self.__getItems__(f'playlists/{str(id)}/items')
         elif type == Type.Album:
-            data = self.__getItems__('albums/' + str(id) + "/items")
+            data = self.__getItems__(f'albums/{str(id)}/items')
         elif type == Type.Mix:
-            data = self.__getItems__('mixes/' + str(id) + '/items')
+            data = self.__getItems__(f'mixes/{str(id)}/items')
         else:
             raise Exception("invalid Type!")
 
@@ -260,12 +256,12 @@ class TidalAPI(object):
 
     def getArtistAlbums(self, id, includeEP=False):
         data = self.__getItems__(f'artists/{str(id)}/albums')
-        albums = list(aigpy.model.dictToModel(item, Album()) for item in data)
+        albums = [aigpy.model.dictToModel(item, Album()) for item in data]
         if not includeEP:
             return albums
 
         data = self.__getItems__(f'artists/{str(id)}/albums', {"filter": "EPSANDSINGLES"})
-        albums += list(aigpy.model.dictToModel(item, Album()) for item in data)
+        albums += [aigpy.model.dictToModel(item, Album()) for item in data]
         return albums
 
     def getStreamUrl(self, id, quality: AudioQuality):
@@ -290,7 +286,7 @@ class TidalAPI(object):
             ret.encryptionKey = manifest['keyId'] if 'keyId' in manifest else ""
             ret.url = manifest['urls'][0]
             return ret
-        raise Exception("Can't get the streamUrl, type is " + resp.manifestMimeType)
+        raise Exception(f"Can't get the streamUrl, type is {resp.manifestMimeType}")
 
     def getVideoStreamUrl(self, id, quality: VideoQuality):
         paras = {"videoquality": "HIGH", "playbackmode": "STREAM", "assetpresentation": "FULL"}
@@ -309,7 +305,7 @@ class TidalAPI(object):
             if index >= len(array):
                 index = len(array) - 1
             return array[index]
-        raise Exception("Can't get the streamUrl, type is " + resp.manifestMimeType)
+        raise Exception(f"Can't get the streamUrl, type is {resp.manifestMimeType}")
 
     def getTrackContributors(self, id):
         return self.__get__(f'tracks/{str(id)}/contributors')
@@ -325,23 +321,22 @@ class TidalAPI(object):
             return ''
 
     def getArtistsName(self, artists=[]):
-        array = list(item.name for item in artists)
+        array = [item.name for item in artists]
         return ", ".join(array)
 
     def getFlag(self, data, type: Type, short=True, separator=" / "):
         master = False
         atmos = False
         explicit = False
-        if type == Type.Album or type == Type.Track:
+        if type in [Type.Album, Type.Track]:
             if data.audioQuality == "HI_RES":
                 master = True
             if type == Type.Album and "DOLBY_ATMOS" in data.audioModes:
                 atmos = True
             if data.explicit is True:
                 explicit = True
-        if type == Type.Video:
-            if data.explicit is True:
-                explicit = True
+        if type == Type.Video and data.explicit is True:
+            explicit = True
         if not master and not atmos and not explicit:
             return ""
         array = []
@@ -358,10 +353,10 @@ class TidalAPI(object):
             return Type.Null, url
 
         url = url.lower()
-        for index, item in enumerate(Type):
+        for item in Type:
             if item.name.lower() in url:
                 etype = item
-                return etype, aigpy.string.getSub(url, etype.name.lower() + '/', '/')
+                return etype, aigpy.string.getSub(url, f'{etype.name.lower()}/', '/')
         return Type.Null, url
 
     def getByString(self, string):
@@ -371,7 +366,7 @@ class TidalAPI(object):
         obj = None
         etype, sid = self.parseUrl(string)
         for index, item in enumerate(Type):
-            if etype != Type.Null and etype != item:
+            if etype not in [Type.Null, item]:
                 continue
             if item == Type.Null:
                 continue

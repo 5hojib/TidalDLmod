@@ -29,12 +29,11 @@ def __displayTime__(seconds, granularity=2):
     )
 
     for name, count in intervals:
-        value = seconds // count
-        if value:
+        if value := seconds // count:
             seconds -= value * count
             if value == 1:
                 name = name.rstrip('s')
-            result.append("{} {}".format(value, name))
+            result.append(f"{value} {name}")
     return ', '.join(result[:granularity])
 
 async def loginByWeb(bot, msg, c_id):
@@ -113,10 +112,7 @@ async def checkLogin():
     if not db_auth:
         return False, lang.select.NO_AUTH
     auth, msg = loginByConfig()
-    if auth:
-        return True, msg
-    else:
-        return False, lang.select.NO_AUTH
+    return (True, msg) if auth else (False, lang.select.NO_AUTH)
 
 '''
 =================================
@@ -131,7 +127,7 @@ async def start(string, bot, msg, c_id, r_id, u_id, u_name):
         try:
             etype, obj = TIDAL_API.getByString(item)
         except Exception as e:
-            LOGGER.warning(str(e) + " [" + item + "]")
+            LOGGER.warning(f"{str(e)} [{item}]")
             return
 
         try:
@@ -203,16 +199,14 @@ async def checkAPI():
         TIDAL_API.apiKey = apiKey.getItem(index)
 
 async def getapiInfo():
-    i = 0
     platform = []
     validity = []
     quality = []
     index = []
     list = apiKey.__API_KEYS__
-    for item in list['keys']:
+    for i, item in enumerate(list['keys']):
         index.append(i)
         platform.append(item['platform'])
         validity.append(item['valid'])
         quality.append(item['formats'])
-        i += 1
     return index, platform, validity, quality
